@@ -1,3 +1,4 @@
+#Zhihao Wang zwang238
 import socket
 import sys
 
@@ -6,21 +7,23 @@ SERVER_IP = "127.0.0.1"
 
 class AuctionClient:
     def __init__(self, SERVER_IP, PORT):
+        #socket of client
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((SERVER_IP, PORT))
-        self.role = None
+        self.role = None            #the parameter stores the value of role
 
     def start(self):
-        self.role = self.client.recv(1024).decode()
+        self.role = self.client.recv(1024).decode() #receive the role value
         print(f"Connected to the Auctioneer server.\n")
         if self.role == "Seller":
             print(f"Your role is : [{self.role}]")
+            #have a while loop on repeating the auction request.
             while True:
                 item = input("Please submit auction request: ")
                 self.client.send(item.encode())
                 response = self.client.recv(1024).decode()
                 if response == "Server: Incorrect format":
-                    print(response)
+                    print(response)#continue the while loop
                     continue
                 if response == "Auction Request received. Now waiting for the Buyer.":
                     print("Server: Auction Start.")
@@ -34,10 +37,12 @@ class AuctionClient:
 
         elif self.role == "Buyer":
             response = self.client.recv(1024).decode()
+            #if the response is including busy, print the whole response.
             if "busy" in response:
                 print(response)
                 return
             print(f"Your role is : [{self.role}]")
+            # print all the response
             if "waiting" in response:
                 print("The Auctioneer is stilling waiting for other Buyers to connect...")
                 response = self.client.recv(1024).decode()
@@ -61,7 +66,7 @@ class AuctionClient:
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python client.py <#ip> <#port>")
+        print("Usage: python auc_client.py <#ip> <#port>")
         sys.exit(1)
     SERVER_IP = sys.argv[1]
     PORT = int(sys.argv[2])
